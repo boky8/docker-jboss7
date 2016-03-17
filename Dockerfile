@@ -79,8 +79,13 @@ RUN \
 RUN addgroup -S jbossas
 RUN adduser -S -D -H -s /sbin/nologin jbossas
 RUN addgroup jbossas jbossas
-RUN curl -S -L https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64 > /usr/local/bin/dumb-init
-RUN chmod +x /usr/local/bin/dumb-init
+#RUN curl -S -L https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64 > /usr/local/bin/dumb-init
+#RUN chmod +x /usr/local/bin/dumb-init
+#RUN apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/community/ tini
+ENV TINI_VERSION v0.9.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /usr/local/bin/tini
+RUN chmod +x /usr/local/bin/tini
+
 RUN \
 	chown -R jbossas:jbossas /var/tmp/jboss && \
 	chown -R jbossas:jbossas /var/log/jboss && \
@@ -106,5 +111,5 @@ ENV FLUSH_ON_START=false
 ENV STARTUP_OPTS="-b 0.0.0.0 -Djboss.bind.address.management=0.0.0.0"
 ENV JAVA_OPTS="-XX:MaxPermSize=512m -Xmx2G -XX:+CMSClassUnloadingEnabled -Djavax.faces.PROJECT_STAGE=Production"
 
-ENTRYPOINT [ "/usr/local/bin/dumb-init" ]
+ENTRYPOINT [ "/tini", "-v", "--" ]
 CMD [ "/bin/sh", "-c", "/start.sh" ]

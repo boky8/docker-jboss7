@@ -5,6 +5,12 @@ echo "========================================================================="
 echo
 echo "  Startup script: /usr/lib/jboss/default/bin/standalone.sh $STARTUP_OPTS"
 
+mkdir -p /var/log/jboss/standalone
+mkdir -p /var/log/jboss/domain
+mkdir -p /var/tmp/jboss/standalone
+mkdir -p /var/tmp/jboss/domain
+
+
 if [ "$FLUSH_ON_START" == "1" ] || [ "$FLUSH_ON_START" == "true" ] || [ "$FLUSH_ON_START" == "on" ]; then
 	profile=standalone
 	echo "  Flushing dumpfiles..."
