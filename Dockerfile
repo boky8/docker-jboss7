@@ -1,4 +1,4 @@
-FROM java/java7:latest
+FROM boky/java7
 
 # Jboss won't compile with a later maven version
 ENV MAVEN_VERSION=3.1.1
