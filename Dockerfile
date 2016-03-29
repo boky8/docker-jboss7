@@ -36,7 +36,7 @@ RUN \
 RUN \
 	cd /tmp && curl -L https://github.com/jbossas/jboss-as/archive/7.1.2.Final.tar.gz | tar xfz - && \
 	cd /tmp/jboss* && $M2/mvn -s tools/maven/conf/settings.xml install -Djava.protocol.handler.pkgs=org.jboss.net.protocol -DskipTests && \
-	mkdir -p /usr/lib/jboss && \ 
+	mkdir -p /usr/lib/jboss && \
 	cd /tmp/jboss* && mv build/target/jboss-as-7.1.2.Final /usr/lib/jboss/ && \
 	ln -s /usr/lib/jboss/jboss-as-7.1.2.Final /usr/lib/jboss/default && \
 	cd /tmp && rm -rf /tmp/jboss* && rm -rf /root/.m2/repository && \
@@ -111,5 +111,5 @@ ENV FLUSH_ON_START=false
 ENV STARTUP_OPTS="-b 0.0.0.0 -Djboss.bind.address.management=0.0.0.0"
 ENV JAVA_OPTS="-XX:MaxPermSize=512m -Xmx2G -XX:+CMSClassUnloadingEnabled -Djavax.faces.PROJECT_STAGE=Production"
 
-ENTRYPOINT [ "/tini", "-v", "--" ]
+ENTRYPOINT [ "/usr/local/bin/tini, "-v", "--" ]
 CMD [ "/bin/sh", "-c", "/start.sh" ]
