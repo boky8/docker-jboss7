@@ -76,17 +76,11 @@ RUN \
 	rm -rf /usr/lib/jboss/default/*.txt && \
 	rm -rf /root/.m2
 
-RUN addgroup -S jbossas
-RUN adduser -S -D -H -s /sbin/nologin jbossas
-RUN addgroup jbossas jbossas
-#RUN curl -S -L https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64 > /usr/local/bin/dumb-init
-#RUN chmod +x /usr/local/bin/dumb-init
-#RUN apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/community/ tini
-ENV TINI_VERSION v0.9.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /usr/local/bin/tini
-RUN chmod +x /usr/local/bin/tini
-
+COPY ./start.sh /
 RUN \
+	addgroup -S jbossas && \
+	adduser -S -D -H -s /sbin/nologin jbossas && \
+	addgroup jbossas jbossas && \
 	chown -R jbossas:jbossas /var/tmp/jboss && \
 	chown -R jbossas:jbossas /var/log/jboss && \
 	mkdir -p /usr/lib/jboss/default/domain/data && chown -R jbossas:jbossas /usr/lib/jboss/default/domain/data && \
@@ -95,21 +89,33 @@ RUN \
 	mkdir -p /usr/lib/jboss/default/standalone/deployments && chown -R jbossas:jbossas /usr/lib/jboss/default/standalone/deployments && \
 	chown -R jbossas:jbossas /usr/lib/jboss/default/domain/configuration && \
 	chown -R jbossas:jbossas /usr/lib/jboss/default/standalone/configuration && \
-	mkdir -p /usr/lib/jboss/default/welcome-content
-	
-COPY ./start.sh /
-RUN chmod +x /start.sh
+	mkdir -p /usr/lib/jboss/default/welcome-content && \
+	apk add --no-cache --update --repository http://nl.alpinelinux.org/alpine/edge/community/ tini && \
+	(rm -rf /var/cache/apk/* || true) && \
+	chmod +x /start.sh
 
-USER jbossas
+#RUN curl -S -L https://github.com/Yelp/dumb-init/releases/download/v1.0.0/dumb-init_1.0.0_amd64 > /usr/local/bin/dumb-init
+#RUN chmod +x /usr/local/bin/dumb-init
+#RUN apk add --update --repository http://dl-1.alpinelinux.org/alpine/edge/community/ tini
+#ENV TINI_VERSION v0.9.0
+#ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static /usr/local/bin/tini
+#RUN chmod +x /usr/local/bin/tini
+
+VOLUME [ "/var/log/jboss", "/usr/lib/jboss/default/domain/configuration", "/usr/lib/jboss/default/standalone/configuration", "/usr/lib/jboss/default/domain/deployments", "/usr/lib/jboss/default/standalone/deployments" ]
+
 EXPOSE 4447
 EXPOSE 8080
 EXPOSE 9990
 EXPOSE 9443
 EXPOSE 9999
 
+USER jbossas
+
 ENV FLUSH_ON_START=false
 ENV STARTUP_OPTS="-b 0.0.0.0 -Djboss.bind.address.management=0.0.0.0"
 ENV JAVA_OPTS="-XX:MaxPermSize=512m -Xmx2G -XX:+CMSClassUnloadingEnabled -Djavax.faces.PROJECT_STAGE=Production"
 
-ENTRYPOINT [ "/usr/local/bin/tini, "-v", "--" ]
+# ENTRYPOINT [ "/usr/local/bin/dumb-init" ]
+# CMD [ "/bin/sh", "-c", "/start.sh" ]
+ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "/bin/sh", "-c", "/start.sh" ]
